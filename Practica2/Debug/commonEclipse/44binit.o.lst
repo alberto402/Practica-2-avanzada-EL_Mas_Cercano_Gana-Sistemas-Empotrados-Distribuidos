@@ -1,0 +1,948 @@
+   1              	# 1 "../commonEclipse/44binit.asm"
+   1              	# *******************************************************
+   0              	
+   0              	
+   0              	
+   2              	# * NAME    : 44BINIT.S									*
+   3              	# * Version : 10.April.2000								*
+   4              	# * Description:										*
+   5              	# *	C start up codes									*
+   6              	# *	Configure memory, Initialize ISR ,stacks			*
+   7              	# *	Initialize C-variables								*
+   8              	# *	Fill zeros into zero-initialized C-variables		*
+   9              	# *******************************************************
+  10              	
+  11              	    .include "option.a"
+   1              	/*********************************************************************************************
+   2              	* File£º	option.a
+   3              	* Author:	embest	
+   4              	* Desc£º	S3CEV40 option parameter
+   5              	* History:	
+   6              	*********************************************************************************************/
+   7              	
+   8              	#**********OPTIONS*******************************
+   9              	.equ 	_ISR_STARTADDRESS,	0xc7fff00		/* GCS6:64M DRAM/SDRAM 	*/
+  10              	
+  11              	#BUSWIDTH; 16,32
+  12              	    	.global		BUSWIDTH
+  13              	.equ 	BUSWIDTH,	16
+  14              	
+  15              	    	.data
+  16              	    	.global		BDRAMTYPE
+  17 0000 53445241 	BDRAMTYPE:	.string		"SDRAM"
+  17      4D00
+  18              	
+  19              	#This value has to be TRUE on ROM program.
+  20              	#This value has to be FALSE in RAM program.
+  21              	    	.global    	PLLONSTART
+  22              	.equ	PLLONSTART, 	1
+  23              	
+  24              			.global 	PLLCLK
+  25              	.equ 	PLLCLK,		64000000
+  26              	
+  27              			.ifeq PLLCLK-64000000	
+  28              	.equ 	M_DIV,		56		/* Fin=8MHz Fout=64MHz */
+  29              	.equ 	P_DIV,		2
+  30              	.equ 	S_DIV,		1
+  31              			.endif
+  32              	
+  33              	#************************************************
+  34              	
+  12              	    .include "memcfg.a"
+   1              	/*********************************************************************************************
+   2              	* File£º	memcfg.a
+   3              	* Author:	embest	
+   4              	* Desc£º	S3CEV40 memory bank config parameter
+   5              	* History:	
+   6              	*********************************************************************************************/
+   7              	
+   8              	#**********MEMORY CONTROL PARAMETERS*******************************
+   9              	
+  10              	#Bank 0 parameter
+  11              	.equ 	B0_Tacs		,0x0	/* 0clk              */                     
+  12              	.equ 	B0_Tcos		,0x0    /* 0clk              */                     
+  13              	.equ 	B0_Tacc		,0x6    /* 10clk             */                     
+  14              	.equ 	B0_Tcoh		,0x0    /* 0clk              */                     
+  15              	.equ 	B0_Tah		,0x0    /* 0clk              */                     
+  16              	.equ 	B0_Tacp		,0x0    /* 0clk              */                     
+  17              	.equ 	B0_PMC		,0x0    /* normal(1data)     */                     
+  18              	                                                                
+  19              	#Bank 1 parameter                                               
+  20              	.equ 	B1_Tacs		,0x3    /* 4clk              */                    
+  21              	.equ 	B1_Tcos		,0x3    /* 4clk              */                    
+  22              	.equ 	B1_Tacc		,0x7    /* 14clk             */                    
+  23              	.equ 	B1_Tcoh		,0x3    /* 4clk              */                    
+  24              	.equ 	B1_Tah		,0x3    /* 4clk              */                    
+  25              	.equ 	B1_Tacp		,0x3    /* 6clk              */                    
+  26              	.equ 	B1_PMC		,0x0    /* normal(1data)     */                    
+  27              	                                                                
+  28              	#Bank 2 parameter                                               
+  29              	.equ 	B2_Tacs		,0x3    /* 4clk              */                     
+  30              	.equ 	B2_Tcos		,0x3    /* 4clk              */                     
+  31              	.equ 	B2_Tacc		,0x7    /* 14clk             */                     
+  32              	.equ 	B2_Tcoh		,0x3    /* 4clk              */                     
+  33              	.equ 	B2_Tah		,0x3    /* 4clk              */                     
+  34              	.equ 	B2_Tacp		,0x3    /* 6clk              */                     
+  35              	.equ 	B2_PMC		,0x0    /* normal(1data)     */                     
+  36              	                                                                
+  37              	#Bank 3 parameter                                               
+  38              	.equ 	B3_Tacs		,0x3    /* 4clk              */                     
+  39              	.equ 	B3_Tcos		,0x3    /* 4clk              */                     
+  40              	.equ 	B3_Tacc		,0x7    /* 14clk             */                     
+  41              	.equ 	B3_Tcoh		,0x3    /* 4clk              */                     
+  42              	.equ 	B3_Tah		,0x3    /* 4clk              */                     
+  43              	.equ 	B3_Tacp		,0x3    /* 6clk              */                     
+  44              	.equ 	B3_PMC		,0x0    /* normal(1data)     */                     
+  45              	                                                                
+  46              	#Bank 4 parameter                                               
+  47              	.equ 	B4_Tacs		,0x3    /* 4clk              */                     
+  48              	.equ 	B4_Tcos		,0x3    /* 4clk              */                     
+  49              	.equ 	B4_Tacc		,0x7    /* 14clk             */                     
+  50              	.equ 	B4_Tcoh		,0x3    /* 4clk              */                     
+  51              	.equ 	B4_Tah		,0x3    /* 4clk              */                     
+  52              	.equ 	B4_Tacp		,0x3    /* 6clk              */                     
+  53              	.equ 	B4_PMC		,0x0    /* normal(1data)     */                     
+  54              	                                                                
+  55              	#Bank 5 parameter                                               
+  56              	.equ 	B5_Tacs		,0x3    /* 4clk              */                     
+  57              	.equ 	B5_Tcos		,0x3    /* 4clk              */                     
+  58              	.equ 	B5_Tacc		,0x7    /* 14clk             */                     
+  59              	.equ 	B5_Tcoh		,0x3    /* 4clk              */                     
+  60              	.equ 	B5_Tah		,0x3    /* 4clk              */                     
+  61              	.equ 	B5_Tacp		,0x3    /* 6clk              */                     
+  62              	.equ 	B5_PMC		,0x0    /* normal(1data)     */                     
+  63              	                                                                
+  64              	#Bank 6(if SROM) parameter
+  65              	.equ 	B6_Tacs		,0x3    /* 4clk              */                     
+  66              	.equ 	B6_Tcos		,0x3    /* 4clk              */                     
+  67              	.equ 	B6_Tacc		,0x7    /* 14clk             */                     
+  68              	.equ 	B6_Tcoh		,0x3    /* 4clk              */                     
+  69              	.equ 	B6_Tah		,0x3    /* 4clk              */                     
+  70              	.equ 	B6_Tacp		,0x3    /* 6clk              */                     
+  71              	.equ 	B6_PMC		,0x0    /* normal(1data)     */                     
+  72              	                                                                
+  73              	#Bank 7(if SROM) parameter
+  74              	.equ 	B7_Tacs		,0x3    /* 4clk              */                     
+  75              	.equ 	B7_Tcos		,0x3    /* 4clk              */                     
+  76              	.equ 	B7_Tacc		,0x7    /* 14clk             */                     
+  77              	.equ 	B7_Tcoh		,0x3    /* 4clk              */                     
+  78              	.equ 	B7_Tah		,0x3    /* 4clk              */                     
+  79              	.equ 	B7_Tacp		,0x3    /* 6clk              */                     
+  80              	.equ 	B7_PMC		,0x0    /* normal(1data)     */                     
+  81              	                                                                
+  82              	#;Bank 6 parameter                                              
+  83              		.ifc BDRAMTYPE, "DRAM"	/* MT=01(FP DRAM) or 10(EDO DRAM)  */       
+  84              	.equ 	B6_MT		,0x2    /* EDO DRAM                        */       
+  85              	.equ 	B6_Trcd		,0x0    /* 1clk                            */       
+  86              	.equ 	B6_Tcas		,0x0    /* 1clk                            */       
+  87              	.equ 	B6_Tcp		,0x0    /* 1clk                            */       
+  88              	.equ 	B6_CAN		,0x2    /* 10bit                           */       
+  89              		.else	         		/* MT=11(SDRAM)                    */       
+  90              	.equ 	B6_MT		,0x3    /* SDRAM                           */       
+  91              	.equ 	B6_Trcd		,0x0    /* 2clk                            */       
+  92              	.equ 	B6_SCAN		,0x0    /* 8bit                            */       
+  93              		.endif                                                  
+  94              	                                                                
+  95              	#Bank 7 parameter                                               
+  96              	 	.ifc BDRAMTYPE, "DRAM"	/* MT=01(FP DRAM) or 10(EDO DRAM)  */       
+  97              	.equ 	B7_MT		,0x2    /* EDO DRAM                        */       
+  98              	.equ 	B7_Trcd		,0x0    /* 2clk                            */       
+  99              	.equ 	B7_Tcas		,0x0    /* 2clk                            */       
+ 100              	.equ 	B7_Tcp		,0x0    /* 2clk                            */       
+ 101              	.equ 	B7_CAN		,0x2    /* 10bit                           */       
+ 102              		.else	         		/* MT=11(SDRAM)                    */       
+ 103              	.equ 	B7_MT		,0x3    /* SDRAM                           */       
+ 104              	.equ 	B7_Trcd		,0x0    /* 2clk                            */       
+ 105              	.equ 	B7_SCAN		,0x0    /* 8bit                            */       
+ 106              		.endif                                                  
+ 107              	                                                                
+ 108              	#REFRESH parameter                                              
+ 109              	.equ 	REFEN		,0x1    /* Refresh enable                   */      
+ 110              	.equ 	TREFMD		,0x0    /* CBR(CAS before RAS)/Auto refresh */      
+ 111              	.equ 	Trp			,0x0    /* 2clk                           	*/
+ 112              	.equ 	Trc			,0x1    /* 5clk                           	*/
+ 113              	.equ 	Tchr		,0x2    /* 3clk                             */      
+ 114              	.equ 	REFCNT		,1113   /* period=15.6us, MCLK=60Mhz        */      
+ 115              	#************************************************
+  13              	
+  14              	#Memory Area
+  15              	#GCS6    8M 16bit(8MB) DRAM/SDRAM(0xc000000-0xc7fffff)
+  16              	#APP     RAM=0xc000000~0xc7effff 
+  17              	#EV_boot RAM=0xc7f0000-0xc7ff000 // if EV_boot
+  18              	#STACK	 =0xc7ffa00
+  19              	
+  20              	#Interrupt Control
+  21              	.equ 	INTPND,		0x01e00004
+  22              	.equ 	INTMOD,		0x01e00008
+  23              	.equ 	INTMSK,		0x01e0000c
+  24              	.equ 	I_ISPR,		0x01e00020
+  25              	.equ 	I_CMST,		0x01e0001c
+  26              	
+  27              	#Watchdog timer
+  28              	.equ 	WTCON,		0x01d30000
+  29              	
+  30              	#Clock Controller
+  31              	.equ 	PLLCON,		0x01d80000
+  32              	.equ 	CLKCON,		0x01d80004
+  33              	.equ 	LOCKTIME,	0x01d8000c
+  34              		
+  35              	#Memory Controller
+  36              	.equ 	REFRESH,	0x01c80024
+  37              	
+  38              	#BDMA destination register
+  39              	.equ 	BDIDES0,	0x1f80008
+  40              	.equ 	BDIDES1,	0x1f80028
+  41              	
+  42              	#Pre-defined constants
+  43              	.equ 	USERMODE,	0x10
+  44              	.equ 	FIQMODE,	0x11
+  45              	.equ 	IRQMODE,	0x12
+  46              	.equ 	SVCMODE,	0x13
+  47              	.equ 	ABORTMODE,	0x17
+  48              	.equ 	UNDEFMODE,	0x1b
+  49              	.equ 	MODEMASK,	0x1f
+  50              	.equ 	NOINT,		0xc0
+  51              	.equ    IRQ_MODE,	0x40       /* disable Interrupt Mode (IRQ) */
+  52              	.equ    FIQ_MODE,	0x80       /* disable Fast Interrupt Mode (FIQ) */
+  53              	
+  54              	.macro HANDLER HandleLabel
+  55              	    sub	    sp,sp,#4	    /* decrement sp(to store jump address) */							
+  56              	    stmfd   sp!,{r0}	    /* PUSH the work register to stack(lr does't push because it return to ori
+  57              	    ldr	    r0,=\HandleLabel/* load the address of HandleXXX to r0 */
+  58              	    ldr	    r0,[r0]	    	/* load the contents(service routine start address) of HandleXXX */
+  59              	    str	    r0,[sp,#4]	    /* store the contents(ISR) of HandleXXX to stack */
+  60              	    ldmfd   sp!,{r0,pc}	    /* POP the work register and pc(jump to ISR) */
+  61              	.endm
+  62              	
+  63              	    .extern       Image_RO_Limit    /* End of ROM code (=start of ROM data) */
+  64              	    .extern       Image_RW_Base     /* Base of RAM to initialise */           
+  65              	    .extern       Image_ZI_Base     /* Base and limit of area */              
+  66              	    .extern       Image_ZI_Limit    /* to zero initialise */       
+  67              	
+  68              	    .extern Main			/* The main entry of mon program */
+  69              	    
+  70              	    .text
+  71              	
+  72              	    ENTRY:
+  73 0000 0A0100EA 	    b ResetHandler			/* for debug            */
+  74 0004 420000EA 	    b HandlerUndef      	/* handlerUndef         */
+  75 0008 470000EA 	    b HandlerSWI        	/* SWI interrupt handler*/
+  76 000c 520000EA 	    b HandlerPabort     	/* handlerPAbort        */
+  77 0010 4B0000EA 	    b HandlerDabort     	/* handlerDAbort        */
+  78 0014 FEFFFFEA 	    b .                 	/* handlerReserved      */
+  79 0018 370000EA 	    b HandlerIRQ
+  80 001c 300000EA 	    b HandlerFIQ
+  81              		#***IMPORTANT NOTE***
+  82              		#If the H/W vectored interrutp mode is enabled, The above two instructions should
+  83              		#be changed like below, to work-around with H/W bug of S3C44B0X interrupt controller. 
+  84              		# b HandlerIRQ  ->  subs pc,lr,#4
+  85              		# b HandlerIRQ  ->  subs pc,lr,#4
+  86              	
+  87              	VECTOR_BRANCH:
+  88 0020 6CF59FE5 	    ldr pc,=HandlerEINT0    /*mGA    H/W interrupt vector table  */
+  89 0024 6CF59FE5 	    ldr pc,=HandlerEINT1    /*	                                 */	
+  90 0028 6CF59FE5 	    ldr pc,=HandlerEINT2    /*                                   */  
+  91 002c 6CF59FE5 	    ldr pc,=HandlerEINT3    /*                                   */  
+  92 0030 6CF59FE5 	    ldr pc,=HandlerEINT4567 /*                                   */  
+  93 0034 6CF59FE5 	    ldr pc,=HandlerTICK	    /*mGA                                */   
+  94 0038 FEFFFFEA 	    b .                                                          
+  95 003c FEFFFFEA 	    b .                                                         
+  96 0040 64F59FE5 	    ldr pc,=HandlerZDMA0    /*mGB                                */  
+  97 0044 64F59FE5 	    ldr pc,=HandlerZDMA1    /*                                   */  
+  98 0048 64F59FE5 	    ldr pc,=HandlerBDMA0    /*                                   */  
+  99 004c 64F59FE5 	    ldr pc,=HandlerBDMA1    /*                                   */  
+ 100 0050 64F59FE5 	    ldr pc,=HandlerWDT	    /*                                   */   
+ 101 0054 64F59FE5 	    ldr pc,=HandlerUERR01   /*mGB                                */  
+ 102 0058 FEFFFFEA 	    b .                                                          
+ 103 005c FEFFFFEA 	    b .                                                          
+ 104 0060 5CF59FE5 	    ldr pc,=HandlerTIMER0   /*mGC                                */  
+ 105 0064 5CF59FE5 	    ldr pc,=HandlerTIMER1   /*                                   */  
+ 106 0068 5CF59FE5 	    ldr pc,=HandlerTIMER2   /*                                   */  
+ 107 006c 5CF59FE5 	    ldr pc,=HandlerTIMER3   /*                                   */  
+ 108 0070 5CF59FE5 	    ldr pc,=HandlerTIMER4   /*                                   */  
+ 109 0074 5CF59FE5 	    ldr pc,=HandlerTIMER5   /*mGC                                */  
+ 110 0078 FEFFFFEA 	    b .                                                          
+ 111 007c FEFFFFEA 	    b .                                                          
+ 112 0080 54F59FE5 	    ldr pc,=HandlerURXD0    /*mGD                                */  
+ 113 0084 54F59FE5 	    ldr pc,=HandlerURXD1    /*                                   */  
+ 114 0088 54F59FE5 	    ldr pc,=HandlerIIC	    /*                                   */   
+ 115 008c 54F59FE5 	    ldr pc,=HandlerSIO	    /*                                   */   
+ 116 0090 54F59FE5 	    ldr pc,=HandlerUTXD0    /*                                   */  
+ 117 0094 54F59FE5 	    ldr pc,=HandlerUTXD1    /*mGD                                */  
+ 118 0098 FEFFFFEA 	    b .                                                          
+ 119 009c FEFFFFEA 	    b .                                                          
+ 120 00a0 4CF59FE5 	    ldr pc,=HandlerRTC	    /*mGKA                               */   
+ 121 00a4 FEFFFFEA 	    b .					    /*                     		         */
+ 122 00a8 FEFFFFEA 	    b .					    /*                     		         */
+ 123 00ac FEFFFFEA 	    b .					    /*                     		         */
+ 124 00b0 FEFFFFEA 	    b .					    /*                     		         */
+ 125 00b4 FEFFFFEA 	    b .					    /*mGKA                 			     */
+ 126 00b8 FEFFFFEA 	    b .                                                          
+ 127 00bc FEFFFFEA 	    b .                                                          
+ 128 00c0 30F59FE5 	    ldr pc,=HandlerADC	    /*mGKB                               */  
+ 129 00c4 FEFFFFEA 	    b .					    /*                     		         */
+ 130 00c8 FEFFFFEA 	    b .					    /*                     		         */
+ 131 00cc FEFFFFEA 	    b .					    /*                     		         */
+ 132 00d0 FEFFFFEA 	    b .					    /*                     		         */
+ 133 00d4 FEFFFFEA 	    b .					    /*mGKB                 		         */
+ 134 00d8 FEFFFFEA 	    b .                                                          
+ 135 00dc FEFFFFEA 	    b .                                                          
+ 136              	@0xe0=EnterPWDN                                                 
+ 137 00e0 14F59FE5 	    ldr pc,=EnterPWDN
+ 138              	
+ 139              	@   .ltorg
+ 140              	          	/* the current contents of the literal pool\
+ 141              	               to be dumped into the current section\ 
+ 142              	               (which is assumed to be the .text section)\ 
+ 143              	               at the current location (aligned to a word boundary).*/
+ 144              	   .align
+ 145              	
+ 146 00e4 04D04DE2 	HandlerFIQ:		HANDLER HandleFIQ
+ 146      04002DE5 
+ 146      0C059FE5 
+ 146      000090E5 
+ 146      04008DE5 
+ 147 00fc 04D04DE2 	HandlerIRQ:		HANDLER HandleIRQ
+ 147      04002DE5 
+ 147      F8049FE5 
+ 147      000090E5 
+ 147      04008DE5 
+ 148 0114 04D04DE2 	HandlerUndef:	HANDLER HandleUndef
+ 148      04002DE5 
+ 148      E4049FE5 
+ 148      000090E5 
+ 148      04008DE5 
+ 149 012c 04D04DE2 	HandlerSWI:		HANDLER HandleSWI
+ 149      04002DE5 
+ 149      D0049FE5 
+ 149      000090E5 
+ 149      04008DE5 
+ 150 0144 04D04DE2 	HandlerDabort:	HANDLER HandleDabort
+ 150      04002DE5 
+ 150      BC049FE5 
+ 150      000090E5 
+ 150      04008DE5 
+ 151 015c 04D04DE2 	HandlerPabort:	HANDLER HandlePabort
+ 151      04002DE5 
+ 151      A8049FE5 
+ 151      000090E5 
+ 151      04008DE5 
+ 152 0174 04D04DE2 	HandlerADC:		HANDLER HandleADC
+ 152      04002DE5 
+ 152      94049FE5 
+ 152      000090E5 
+ 152      04008DE5 
+ 153 018c 04D04DE2 	HandlerRTC:		HANDLER HandleRTC
+ 153      04002DE5 
+ 153      80049FE5 
+ 153      000090E5 
+ 153      04008DE5 
+ 154 01a4 04D04DE2 	HandlerUTXD1:	HANDLER HandleUTXD1
+ 154      04002DE5 
+ 154      6C049FE5 
+ 154      000090E5 
+ 154      04008DE5 
+ 155 01bc 04D04DE2 	HandlerUTXD0:	HANDLER HandleUTXD0
+ 155      04002DE5 
+ 155      58049FE5 
+ 155      000090E5 
+ 155      04008DE5 
+ 156 01d4 04D04DE2 	HandlerSIO:		HANDLER HandleSIO
+ 156      04002DE5 
+ 156      44049FE5 
+ 156      000090E5 
+ 156      04008DE5 
+ 157 01ec 04D04DE2 	HandlerIIC:		HANDLER HandleIIC
+ 157      04002DE5 
+ 157      30049FE5 
+ 157      000090E5 
+ 157      04008DE5 
+ 158 0204 04D04DE2 	HandlerURXD1:	HANDLER HandleURXD1
+ 158      04002DE5 
+ 158      1C049FE5 
+ 158      000090E5 
+ 158      04008DE5 
+ 159 021c 04D04DE2 	HandlerURXD0:	HANDLER HandleURXD0
+ 159      04002DE5 
+ 159      08049FE5 
+ 159      000090E5 
+ 159      04008DE5 
+ 160 0234 04D04DE2 	HandlerTIMER5:	HANDLER HandleTIMER5
+ 160      04002DE5 
+ 160      F4039FE5 
+ 160      000090E5 
+ 160      04008DE5 
+ 161 024c 04D04DE2 	HandlerTIMER4:	HANDLER HandleTIMER4
+ 161      04002DE5 
+ 161      E0039FE5 
+ 161      000090E5 
+ 161      04008DE5 
+ 162 0264 04D04DE2 	HandlerTIMER3:	HANDLER HandleTIMER3
+ 162      04002DE5 
+ 162      CC039FE5 
+ 162      000090E5 
+ 162      04008DE5 
+ 163 027c 04D04DE2 	HandlerTIMER2:	HANDLER HandleTIMER2
+ 163      04002DE5 
+ 163      B8039FE5 
+ 163      000090E5 
+ 163      04008DE5 
+ 164 0294 04D04DE2 	HandlerTIMER1:	HANDLER HandleTIMER1
+ 164      04002DE5 
+ 164      A4039FE5 
+ 164      000090E5 
+ 164      04008DE5 
+ 165 02ac 04D04DE2 	HandlerTIMER0:	HANDLER HandleTIMER0
+ 165      04002DE5 
+ 165      90039FE5 
+ 165      000090E5 
+ 165      04008DE5 
+ 166 02c4 04D04DE2 	HandlerUERR01:	HANDLER HandleUERR01
+ 166      04002DE5 
+ 166      7C039FE5 
+ 166      000090E5 
+ 166      04008DE5 
+ 167 02dc 04D04DE2 	HandlerWDT:		HANDLER HandleWDT
+ 167      04002DE5 
+ 167      68039FE5 
+ 167      000090E5 
+ 167      04008DE5 
+ 168 02f4 04D04DE2 	HandlerBDMA1:	HANDLER HandleBDMA1
+ 168      04002DE5 
+ 168      54039FE5 
+ 168      000090E5 
+ 168      04008DE5 
+ 169 030c 04D04DE2 	HandlerBDMA0:	HANDLER HandleBDMA0
+ 169      04002DE5 
+ 169      40039FE5 
+ 169      000090E5 
+ 169      04008DE5 
+ 170 0324 04D04DE2 	HandlerZDMA1:	HANDLER HandleZDMA1
+ 170      04002DE5 
+ 170      2C039FE5 
+ 170      000090E5 
+ 170      04008DE5 
+ 171 033c 04D04DE2 	HandlerZDMA0:	HANDLER HandleZDMA0
+ 171      04002DE5 
+ 171      18039FE5 
+ 171      000090E5 
+ 171      04008DE5 
+ 172 0354 04D04DE2 	HandlerTICK:	HANDLER HandleTICK
+ 172      04002DE5 
+ 172      04039FE5 
+ 172      000090E5 
+ 172      04008DE5 
+ 173 036c 04D04DE2 	HandlerEINT4567:HANDLER HandleEINT4567
+ 173      04002DE5 
+ 173      F0029FE5 
+ 173      000090E5 
+ 173      04008DE5 
+ 174 0384 04D04DE2 	HandlerEINT3:	HANDLER HandleEINT3
+ 174      04002DE5 
+ 174      DC029FE5 
+ 174      000090E5 
+ 174      04008DE5 
+ 175 039c 04D04DE2 	HandlerEINT2:	HANDLER HandleEINT2
+ 175      04002DE5 
+ 175      C8029FE5 
+ 175      000090E5 
+ 175      04008DE5 
+ 176 03b4 04D04DE2 	HandlerEINT1:	HANDLER HandleEINT1
+ 176      04002DE5 
+ 176      B4029FE5 
+ 176      000090E5 
+ 176      04008DE5 
+ 177 03cc 04D04DE2 	HandlerEINT0:	HANDLER HandleEINT0
+ 177      04002DE5 
+ 177      A0029FE5 
+ 177      000090E5 
+ 177      04008DE5 
+ 178              	
+ 179              	#One of the following two routines can be used for non-vectored interrupt.
+ 180              	
+ 181              	IsrIRQ:						/* using I_ISPR register. */
+ 182 03e4 04D04DE2 	    sub	    sp,sp,#4       	/* reserved for PC	  */
+ 183 03e8 00032DE9 	    stmfd   sp!,{r8-r9}   
+ 184              	
+ 185              		/*#IMPORTANT CAUTION
+ 186              		#if I_ISPC isn't used properly, I_ISPR can be 0 in this routine.*/
+ 187              	
+ 188 03ec 8C929FE5 	    ldr	    r9,=I_ISPR
+ 189 03f0 009099E5 	    ldr	    r9,[r9]
+ 190              	
+ 191 03f4 000059E3 		cmp		r9, #0x0		/* If the IDLE mode work-around is used, 	*/
+ 192              								/* r9 may be 0 sometimes.			*/
+ 193 03f8 0900000A 		beq		l2
+ 194              	
+ 195 03fc 0080A0E3 	    mov	    r8,#0x0
+ 196              	l0:
+ 197 0400 A990B0E1 	    movs    r9,r9,lsr #1
+ 198 0404 0100002A 	    bcs	    l1
+ 199 0408 048088E2 	    add	    r8,r8,#4
+ 200 040c FBFFFFEA 	    b	    l0
+ 201              	
+ 202              	l1:
+ 203 0410 00929FE5 	    ldr	    r9,=HandleADC
+ 204 0414 089089E0 	    add	    r9,r9,r8
+ 205 0418 009099E5 	    ldr	    r9,[r9]
+ 206 041c 08908DE5 	    str	    r9,[sp,#8]
+ 207 0420 0083BDE8 	    ldmfd   sp!,{r8-r9,pc}
+ 208              	
+ 209              	l2:
+ 210 0424 0003BDE8 		ldmfd	sp!,{r8-r9}
+ 211 0428 04D08DE2 		add		sp,sp,#4
+ 212 042c 04F05EE2 		subs	pc,lr,#4
+ 213              	
+ 214              	#****************************************************
+ 215              	#*	START											*
+ 216              	#****************************************************
+ 217              	ResetHandler:
+ 218 0430 4C029FE5 	    ldr	    r0,=WTCON	    	/* watch dog disable*/
+ 219 0434 0010A0E3 	    ldr	    r1,=0x0 		
+ 220 0438 001080E5 	    str	    r1,[r0]
+ 221              	
+ 222 043c 44029FE5 	    ldr	    r0,=INTMSK
+ 223 0440 3E13E0E3 	    ldr	    r1,=0x07ffffff  	/* all interrupt disable */
+ 224 0444 001080E5 	    str	    r1,[r0]
+ 225              	
+ 226              	    #****************************************************
+ 227              	    #*	Set clock control registers						*
+ 228              	    #****************************************************
+ 229 0448 3C029FE5 	    ldr		r0,=LOCKTIME
+ 230 044c 3C129FE5 	    ldr		r1,=0xfff
+ 231 0450 001080E5 	    str		r1,[r0]
+ 232              	
+ 233              	.if PLLONSTART
+ 234 0454 7607A0E3 		ldr		r0,=PLLCON			/* temporary setting of PLL */
+ 235 0458 34129FE5 		ldr		r1,=((M_DIV<<12)+(P_DIV<<4)+S_DIV)	/* Fin=8MHz,Fout=64MHz     */
+ 236 045c 001080E5 		str		r1,[r0]
+ 237              	.endif
+ 238              	
+ 239 0460 30029FE5 	    ldr	    r0,=CLKCON		
+ 240 0464 30129FE5 	    ldr	    r1,=0x7ff8	    	/* All unit block CLK enable */
+ 241 0468 001080E5 	    str	    r1,[r0]
+ 242              	
+ 243              	    #****************************************
+ 244              	    #*  change BDMACON reset value for BDMA *   
+ 245              	    #****************************************
+ 246 046c 2C029FE5 	    ldr     r0,=BDIDES0      
+ 247 0470 0111A0E3 	    ldr     r1,=0x40000000   	/* BDIDESn reset value should be 0x40000000 */
+ 248 0474 001080E5 	    str     r1,[r0]
+ 249              	
+ 250 0478 24029FE5 	    ldr     r0,=BDIDES1      
+ 251 047c 0111A0E3 	    ldr     r1,=0x40000000   	/* BDIDESn reset value should be 0x40000000 */	 
+ 252 0480 001080E5 	    str     r1,[r0]
+ 253              	
+ 254              	    #****************************************************
+ 255              	    #*	Set memory control registers					* 	
+ 256              	    #****************************************************
+ 257 0484 1C029FE5 	    ldr	    r0,=SMRDATA
+ 258 0488 FE3F90E8 	    ldmia   r0,{r1-r13}
+ 259 048c 7207A0E3 	    ldr	    r0,=0x01c80000  	/* BWSCON Address */
+ 260 0490 FE3F80E8 	    stmia   r0,{r1-r13}
+ 261              	
+ 262              	    #;****************************************************
+ 263              	    #;*	Initialize stacks								* 
+ 264              	    #;****************************************************
+ 265 0494 10D29FE5 	    ldr	    sp, =SVCStack		/* Why	*/		
+ 266 0498 150000EB 	    bl	    InitStacks
+ 267              	
+ 268              	    #;****************************************************
+ 269              	    #;*	Setup IRQ handler								*
+ 270              	    #;****************************************************
+ 271 049c 60019FE5 	    ldr	    r0,=HandleIRQ		/* This routine is needed */
+ 272 04a0 08129FE5 	    ldr	    r1,=IsrIRQ			/* if there isn't 'subs pc,lr,#4' at 0x18, 0x1c */
+ 273 04a4 001080E5 	    str	    r1,[r0]
+ 274              	
+ 275              	    #********************************************************
+ 276              	    #*	Copy and paste RW data/zero initialized data	    *
+ 277              	    #********************************************************
+ 278 04a8 04029FE5 	    LDR	    r0, =Image_RO_Limit	/* Get pointer to ROM data */
+ 279 04ac 04129FE5 	    LDR	    r1, =Image_RW_Base	/* and RAM copy	*/
+ 280 04b0 04329FE5 	    LDR	    r3, =Image_ZI_Base	
+ 281              		/* Zero init base => top of initialised data */
+ 282              				
+ 283 04b4 010050E1 	    CMP	    r0, r1	    		/* Check that they are different */
+ 284 04b8 0300000A 	    BEQ	    F1
+ 285              	F0:
+ 286 04bc 030051E1 	    CMP	    r1, r3				/* Copy init data                        */
+ 287 04c0 04209034 	    LDRCC   r2, [r0], #4        /* --> LDRCC r2, [r0] + ADD r0, r0, #4	 */
+ 288 04c4 04208134 	    STRCC   r2, [r1], #4        /* --> STRCC r2, [r1] + ADD r1, r1, #4   */ 
+ 289 04c8 FBFFFF3A 	    BCC	    F0
+ 290              	F1:
+ 291 04cc EC119FE5 	    LDR	    r1, =Image_ZI_Limit	/* Top of zero init segment */
+ 292 04d0 0020A0E3 	    MOV	    r2, #0
+ 293              	F2:
+ 294 04d4 010053E1 	    CMP	    r3, r1	    		/* Zero init */
+ 295 04d8 04208334 	    STRCC   r2, [r3], #4
+ 296 04dc FCFFFF3A 	    BCC	    F2
+ 297              	
+ 298 04e0 00000FE1 		MRS	r0, CPSR
+ 299 04e4 C000C0E3 		BIC	r0, r0, #NOINT /* enable interrupt */
+ 300 04e8 00F02FE1 		MSR	CPSR_cxsf, r0
+ 301              		/* jump to main() */
+ 302 04ec FEFFFFEB 	   	BL	Main
+ 303 04f0 FEFFFFEA 	   	B   .	    
+ 304              	
+ 305              	#;****************************************************
+ 306              	#;*	The function for initializing stack				*
+ 307              	#;****************************************************
+ 308              	InitStacks:
+ 309              		#Don't use DRAM,such as stmfd,ldmfd......
+ 310              		#SVCstack is initialized before
+ 311              		#Under toolkit ver 2.50, 'msr cpsr,r1' can be used instead of 'msr cpsr_cxsf,r1'
+ 312              	
+ 313 04f4 00000FE1 	    mrs	    r0,cpsr
+ 314 04f8 1F00C0E3 	    bic	    r0,r0,#MODEMASK
+ 315 04fc 1B1080E3 	    orr	    r1,r0,#UNDEFMODE
+ 316 0500 01F02FE1 	    msr	    cpsr_cxsf,r1		/* UndefMode */
+ 317 0504 B8D19FE5 	    ldr	    sp,=UndefStack
+ 318              		
+ 319 0508 D71080E3 	    orr	    r1,r0,#ABORTMODE|NOINT
+ 320 050c 01F02FE1 	    msr	    cpsr_cxsf,r1 	    /* AbortMode */	
+ 321 0510 B0D19FE5 	    ldr	    sp,=AbortStack
+ 322              	
+ 323 0514 921080E3 	    orr	    r1,r0,#IRQMODE|FIQ_MODE
+ 324 0518 01F02FE1 	    msr	    cpsr_cxsf,r1 	    /* IRQMode */
+ 325 051c A8D19FE5 	    ldr	    sp,=IRQStack
+ 326              		
+ 327 0520 511080E3 	    orr	    r1,r0,#FIQMODE|IRQ_MODE
+ 328 0524 01F02FE1 	    msr	    cpsr_cxsf,r1 	    /* FIQMode */
+ 329 0528 A0D19FE5 	    ldr	    sp,=FIQStack
+ 330              	
+ 331 052c 1F00C0E3 	    bic	    r0,r0,#MODEMASK
+ 332 0530 131080E3 	    orr	    r1,r0,#SVCMODE
+ 333 0534 01F02FE1 	    msr	    cpsr_cxsf,r1 	    /* SVCMode */
+ 334 0538 6CD19FE5 	    ldr	    sp,=SVCStack
+ 335              	
+ 336              		#USER mode is not initialized.
+ 337 053c 0EF0A0E1 	    mov	    pc,lr 				/* The LR register may be not valid for the mode changes. */
+ 338              	
+ 339              	#****************************************************
+ 340              	#*	The function for entering power down mode		*
+ 341              	#****************************************************
+ 342              	#void EnterPWDN(int CLKCON);
+ 343              	EnterPWDN:
+ 344 0540 0020A0E1 	    mov	    r2,r0               /* r0=CLKCON */
+ 345 0544 88019FE5 	    ldr	    r0,=REFRESH		
+ 346 0548 003090E5 	    ldr	    r3,[r0]
+ 347 054c 0310A0E1 	    mov	    r1, r3
+ 348 0550 011581E3 	    orr	    r1, r1, #0x400000   /* self-refresh enable */
+ 349 0554 001080E5 	    str	    r1, [r0]
+ 350              	
+ 351 0558 0000A0E1 	    nop     /* Wait until self-refresh is issued. May not be needed. */
+ 352 055c 0000A0E1 	    nop     /* If the other bus master holds the bus, ... */
+ 353 0560 0000A0E1 	    nop	    /* mov r0, r0 */
+ 354 0564 0000A0E1 	    nop
+ 355 0568 0000A0E1 	    nop
+ 356 056c 0000A0E1 	    nop
+ 357 0570 0000A0E1 	    nop
+ 358              	
+ 359              	#enter POWERDN mode
+ 360 0574 1C019FE5 	    ldr	    r0,=CLKCON
+ 361 0578 002080E5 	    str	    r2,[r0]
+ 362              	
+ 363              	#wait until enter SL_IDLE,STOP mode and until wake-up
+ 364 057c 1000A0E3 	    ldr	    r0,=0x10
+ 365 0580 010050E2 	U0: subs    r0,r0,#1
+ 366 0584 FDFFFF1A 	    bne	    U0
+ 367              	
+ 368              	#exit from DRAM/SDRAM self refresh mode.
+ 369 0588 44019FE5 	    ldr	    r0,=REFRESH
+ 370 058c 003080E5 	    str	    r3,[r0]
+ 371 0590 0EF0A0E1 	    mov	    pc,lr
+ 372              	    
+ 373 0594 CC030000 	    .ltorg
+ 373      B4030000 
+ 373      9C030000 
+ 373      84030000 
+ 373      6C030000 
+ 374              	
+ 375              	SMRDATA:
+ 376              	#*****************************************************************
+ 377              	#* Memory configuration has to be optimized for best performance *
+ 378              	#* The following parameter is not optimized.                     *
+ 379              	#*****************************************************************
+ 380              	
+ 381              	#*** memory access cycle parameter strategy ***
+ 382              	# 1) Even FP-DRAM, EDO setting has more late fetch point by half-clock
+ 383              	# 2) The memory settings,here, are made the safe parameters even at 66Mhz.
+ 384              	# 3) FP-DRAM Parameters:tRCD=3 for tRAC, tcas=2 for pad delay, tcp=2 for bus load.
+ 385              	# 4) DRAM refresh rate is for 40Mhz. 
+ 386              	
+ 387              	#bank0	16bit BOOT ROM
+ 388              	#bank1	NandFlash(8bit)/IDE/USB/rtl8019as/LCD
+ 389              	#bank2	No use 
+ 390              	#bank3	Keyboard 
+ 391              	#bank4	No use
+ 392              	#bank5	No use
+ 393              	#bank6	16bit SDRAM
+ 394              	#bank7	No use
+ 395              	
+ 396              	.ifeq BUSWIDTH-16
+ 397 06d8 02011111 		.long 0x11110102		/* Bank0=16bit BootRom(AT29C010A*2) :0x0 */
+ 398              	.else
+ 399              	   	.long 0x22222220		/* Bank0=OM[1:0], Bank1~Bank7=32bit 	 */
+ 400              	.endif
+ 401 06dc 00060000 		.long ((B0_Tacs<<13)+(B0_Tcos<<11)+(B0_Tacc<<8)+(B0_Tcoh<<6)+(B0_Tah<<4)+(B0_Tacp<<2)+(B0_PMC))	/*
+ 402 06e0 FC7F0000 		.long ((B1_Tacs<<13)+(B1_Tcos<<11)+(B1_Tacc<<8)+(B1_Tcoh<<6)+(B1_Tah<<4)+(B1_Tacp<<2)+(B1_PMC))	/*
+ 403 06e4 FC7F0000 		.long ((B2_Tacs<<13)+(B2_Tcos<<11)+(B2_Tacc<<8)+(B2_Tcoh<<6)+(B2_Tah<<4)+(B2_Tacp<<2)+(B2_PMC))	/*
+ 404 06e8 FC7F0000 		.long ((B3_Tacs<<13)+(B3_Tcos<<11)+(B3_Tacc<<8)+(B3_Tcoh<<6)+(B3_Tah<<4)+(B3_Tacp<<2)+(B3_PMC))	/*
+ 405 06ec FC7F0000 		.long ((B4_Tacs<<13)+(B4_Tcos<<11)+(B4_Tacc<<8)+(B4_Tcoh<<6)+(B4_Tah<<4)+(B4_Tacp<<2)+(B4_PMC))	/*
+ 406 06f0 FC7F0000 		.long ((B5_Tacs<<13)+(B5_Tcos<<11)+(B5_Tacc<<8)+(B5_Tcoh<<6)+(B5_Tah<<4)+(B5_Tacp<<2)+(B5_PMC))	/*
+ 407              		.ifc "DRAM",BDRAMTYPE
+ 408              		    .long ((B6_MT<<15)+(B6_Trcd<<4)+(B6_Tcas<<3)+(B6_Tcp<<2)+(B6_CAN))	/* GCS6 check the MT value 
+ 409              		    .long ((B7_MT<<15)+(B7_Trcd<<4)+(B7_Tcas<<3)+(B7_Tcp<<2)+(B7_CAN))	/* GCS7                    
+ 410              		.else
+ 411 06f4 00800100 			.long ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))	/* GCS6 */
+ 412 06f8 00800100 			.long ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))	/* GCS7 */
+ 413              		.endif
+ 414 06fc 59048600 		.long ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)	/* REFRESH RFEN=1, TREFMD=0
+ 415 0700 10000000 		.long 0x10				/* SCLK power down mode, BANKSIZE 32M/32M */
+ 416 0704 20000000 		.long 0x20				/* MRSR6 CL=2clk                          */
+ 417 0708 20000000 		.long 0x20				/* MRSR7                                  */
+ 418              	
+ 419              	
+ 420              	.equ 	UserStack,	_ISR_STARTADDRESS-0xf00    		/* c7ff000 */   	
+ 421              	.equ	SVCStack,	_ISR_STARTADDRESS-0xf00+256    	/* c7ff100 */
+ 422              	.equ	UndefStack,	_ISR_STARTADDRESS-0xf00+256*2   /* c7ff200 */
+ 423              	.equ	AbortStack,	_ISR_STARTADDRESS-0xf00+256*3   /* c7ff300 */
+ 424              	.equ	IRQStack,	_ISR_STARTADDRESS-0xf00+256*4   /* c7ff400 */
+ 425              	.equ	FIQStack,	_ISR_STARTADDRESS-0xf00+256*5   /* c7ff500 */
+ 426              	
+ 427              	.equ	HandleReset,	_ISR_STARTADDRESS
+ 428              	.equ	HandleUndef,	_ISR_STARTADDRESS+4
+ 429              	.equ	HandleSWI,		_ISR_STARTADDRESS+4*2
+ 430              	.equ	HandlePabort,	_ISR_STARTADDRESS+4*3
+ 431              	.equ	HandleDabort,	_ISR_STARTADDRESS+4*4
+ 432              	.equ	HandleReserved,	_ISR_STARTADDRESS+4*5
+ 433              	.equ	HandleIRQ,		_ISR_STARTADDRESS+4*6
+ 434              	.equ	HandleFIQ,		_ISR_STARTADDRESS+4*7
+ 435              	
+ 436              	#Don't use the label 'IntVectorTable',
+ 437              	#because armasm.exe cann't recognize this label correctly.
+ 438              	#the value is different with an address you think it may be.
+ 439              	#IntVectorTable
+ 440              	.equ	HandleADC,    	_ISR_STARTADDRESS+4*8
+ 441              	.equ	HandleRTC,		_ISR_STARTADDRESS+4*9
+ 442              	.equ	HandleUTXD1, 	_ISR_STARTADDRESS+4*10
+ 443              	.equ	HandleUTXD0,	_ISR_STARTADDRESS+4*11
+ 444              	.equ	HandleSIO,		_ISR_STARTADDRESS+4*12
+ 445              	.equ	HandleIIC,		_ISR_STARTADDRESS+4*13
+ 446              	.equ	HandleURXD1,	_ISR_STARTADDRESS+4*14
+ 447              	.equ	HandleURXD0,	_ISR_STARTADDRESS+4*15
+ 448              	.equ	HandleTIMER5,	_ISR_STARTADDRESS+4*16
+ 449              	.equ	HandleTIMER4,	_ISR_STARTADDRESS+4*17
+ 450              	.equ	HandleTIMER3,	_ISR_STARTADDRESS+4*18
+ 451              	.equ	HandleTIMER2,	_ISR_STARTADDRESS+4*19
+ 452              	.equ	HandleTIMER1,	_ISR_STARTADDRESS+4*20
+ 453              	.equ	HandleTIMER0,	_ISR_STARTADDRESS+4*21
+ 454              	.equ	HandleUERR01,	_ISR_STARTADDRESS+4*22
+ 455              	.equ	HandleWDT,		_ISR_STARTADDRESS+4*23
+ 456              	.equ	HandleBDMA1, 	_ISR_STARTADDRESS+4*24
+ 457              	.equ	HandleBDMA0,	_ISR_STARTADDRESS+4*25
+ 458              	.equ	HandleZDMA1, 	_ISR_STARTADDRESS+4*26
+ 459              	.equ	HandleZDMA0,	_ISR_STARTADDRESS+4*27
+ 460              	.equ	HandleTICK,		_ISR_STARTADDRESS+4*28
+ 461              	.equ	HandleEINT4567,	_ISR_STARTADDRESS+4*29
+ 462              	.equ	HandleEINT3,	_ISR_STARTADDRESS+4*30
+ 463              	.equ	HandleEINT2,	_ISR_STARTADDRESS+4*31
+ 464              	.equ	HandleEINT1,	_ISR_STARTADDRESS+4*32
+ 465              	.equ	HandleEINT0,	_ISR_STARTADDRESS+4*33		/* 0xc1(c7)fff84 */
+ 466              	
+ 467              			.end
+DEFINED SYMBOLS
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/option.a:9      *ABS*:0c7fff00 _ISR_STARTADDRESS
+                            *ABS*:00000010 BUSWIDTH
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/option.a:17     .data:00000000 BDRAMTYPE
+                            *ABS*:00000001 PLLONSTART
+                            *ABS*:03d09000 PLLCLK
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/option.a:28     *ABS*:00000038 M_DIV
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/option.a:29     *ABS*:00000002 P_DIV
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/option.a:30     *ABS*:00000001 S_DIV
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:11     *ABS*:00000000 B0_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:12     *ABS*:00000000 B0_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:13     *ABS*:00000006 B0_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:14     *ABS*:00000000 B0_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:15     *ABS*:00000000 B0_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:16     *ABS*:00000000 B0_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:17     *ABS*:00000000 B0_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:20     *ABS*:00000003 B1_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:21     *ABS*:00000003 B1_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:22     *ABS*:00000007 B1_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:23     *ABS*:00000003 B1_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:24     *ABS*:00000003 B1_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:25     *ABS*:00000003 B1_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:26     *ABS*:00000000 B1_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:29     *ABS*:00000003 B2_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:30     *ABS*:00000003 B2_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:31     *ABS*:00000007 B2_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:32     *ABS*:00000003 B2_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:33     *ABS*:00000003 B2_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:34     *ABS*:00000003 B2_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:35     *ABS*:00000000 B2_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:38     *ABS*:00000003 B3_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:39     *ABS*:00000003 B3_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:40     *ABS*:00000007 B3_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:41     *ABS*:00000003 B3_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:42     *ABS*:00000003 B3_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:43     *ABS*:00000003 B3_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:44     *ABS*:00000000 B3_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:47     *ABS*:00000003 B4_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:48     *ABS*:00000003 B4_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:49     *ABS*:00000007 B4_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:50     *ABS*:00000003 B4_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:51     *ABS*:00000003 B4_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:52     *ABS*:00000003 B4_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:53     *ABS*:00000000 B4_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:56     *ABS*:00000003 B5_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:57     *ABS*:00000003 B5_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:58     *ABS*:00000007 B5_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:59     *ABS*:00000003 B5_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:60     *ABS*:00000003 B5_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:61     *ABS*:00000003 B5_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:62     *ABS*:00000000 B5_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:65     *ABS*:00000003 B6_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:66     *ABS*:00000003 B6_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:67     *ABS*:00000007 B6_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:68     *ABS*:00000003 B6_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:69     *ABS*:00000003 B6_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:70     *ABS*:00000003 B6_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:71     *ABS*:00000000 B6_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:74     *ABS*:00000003 B7_Tacs
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:75     *ABS*:00000003 B7_Tcos
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:76     *ABS*:00000007 B7_Tacc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:77     *ABS*:00000003 B7_Tcoh
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:78     *ABS*:00000003 B7_Tah
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:79     *ABS*:00000003 B7_Tacp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:80     *ABS*:00000000 B7_PMC
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:90     *ABS*:00000003 B6_MT
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:91     *ABS*:00000000 B6_Trcd
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:92     *ABS*:00000000 B6_SCAN
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:103    *ABS*:00000003 B7_MT
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:104    *ABS*:00000000 B7_Trcd
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:105    *ABS*:00000000 B7_SCAN
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:109    *ABS*:00000001 REFEN
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:110    *ABS*:00000000 TREFMD
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:111    *ABS*:00000000 Trp
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:112    *ABS*:00000001 Trc
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:113    *ABS*:00000002 Tchr
+C:\Users\usuario_local\Downloads\Practica 2\Practica2\commonEclipse/memcfg.a:114    *ABS*:00000459 REFCNT
+../commonEclipse/44binit.asm:21     *ABS*:01e00004 INTPND
+../commonEclipse/44binit.asm:22     *ABS*:01e00008 INTMOD
+../commonEclipse/44binit.asm:23     *ABS*:01e0000c INTMSK
+../commonEclipse/44binit.asm:24     *ABS*:01e00020 I_ISPR
+../commonEclipse/44binit.asm:25     *ABS*:01e0001c I_CMST
+../commonEclipse/44binit.asm:28     *ABS*:01d30000 WTCON
+../commonEclipse/44binit.asm:31     *ABS*:01d80000 PLLCON
+../commonEclipse/44binit.asm:32     *ABS*:01d80004 CLKCON
+../commonEclipse/44binit.asm:33     *ABS*:01d8000c LOCKTIME
+../commonEclipse/44binit.asm:36     *ABS*:01c80024 REFRESH
+../commonEclipse/44binit.asm:39     *ABS*:01f80008 BDIDES0
+../commonEclipse/44binit.asm:40     *ABS*:01f80028 BDIDES1
+../commonEclipse/44binit.asm:43     *ABS*:00000010 USERMODE
+../commonEclipse/44binit.asm:44     *ABS*:00000011 FIQMODE
+../commonEclipse/44binit.asm:45     *ABS*:00000012 IRQMODE
+../commonEclipse/44binit.asm:46     *ABS*:00000013 SVCMODE
+../commonEclipse/44binit.asm:47     *ABS*:00000017 ABORTMODE
+../commonEclipse/44binit.asm:48     *ABS*:0000001b UNDEFMODE
+../commonEclipse/44binit.asm:49     *ABS*:0000001f MODEMASK
+../commonEclipse/44binit.asm:50     *ABS*:000000c0 NOINT
+../commonEclipse/44binit.asm:51     *ABS*:00000040 IRQ_MODE
+../commonEclipse/44binit.asm:52     *ABS*:00000080 FIQ_MODE
+../commonEclipse/44binit.asm:72     .text:00000000 ENTRY
+../commonEclipse/44binit.asm:217    .text:00000430 ResetHandler
+../commonEclipse/44binit.asm:73     .text:00000000 $a
+../commonEclipse/44binit.asm:148    .text:00000114 HandlerUndef
+../commonEclipse/44binit.asm:149    .text:0000012c HandlerSWI
+../commonEclipse/44binit.asm:151    .text:0000015c HandlerPabort
+../commonEclipse/44binit.asm:150    .text:00000144 HandlerDabort
+../commonEclipse/44binit.asm:147    .text:000000fc HandlerIRQ
+../commonEclipse/44binit.asm:146    .text:000000e4 HandlerFIQ
+../commonEclipse/44binit.asm:87     .text:00000020 VECTOR_BRANCH
+../commonEclipse/44binit.asm:177    .text:000003cc HandlerEINT0
+../commonEclipse/44binit.asm:176    .text:000003b4 HandlerEINT1
+../commonEclipse/44binit.asm:175    .text:0000039c HandlerEINT2
+../commonEclipse/44binit.asm:174    .text:00000384 HandlerEINT3
+../commonEclipse/44binit.asm:173    .text:0000036c HandlerEINT4567
+../commonEclipse/44binit.asm:172    .text:00000354 HandlerTICK
+../commonEclipse/44binit.asm:171    .text:0000033c HandlerZDMA0
+../commonEclipse/44binit.asm:170    .text:00000324 HandlerZDMA1
+../commonEclipse/44binit.asm:169    .text:0000030c HandlerBDMA0
+../commonEclipse/44binit.asm:168    .text:000002f4 HandlerBDMA1
+../commonEclipse/44binit.asm:167    .text:000002dc HandlerWDT
+../commonEclipse/44binit.asm:166    .text:000002c4 HandlerUERR01
+../commonEclipse/44binit.asm:165    .text:000002ac HandlerTIMER0
+../commonEclipse/44binit.asm:164    .text:00000294 HandlerTIMER1
+../commonEclipse/44binit.asm:163    .text:0000027c HandlerTIMER2
+../commonEclipse/44binit.asm:162    .text:00000264 HandlerTIMER3
+../commonEclipse/44binit.asm:161    .text:0000024c HandlerTIMER4
+../commonEclipse/44binit.asm:160    .text:00000234 HandlerTIMER5
+../commonEclipse/44binit.asm:159    .text:0000021c HandlerURXD0
+../commonEclipse/44binit.asm:158    .text:00000204 HandlerURXD1
+../commonEclipse/44binit.asm:157    .text:000001ec HandlerIIC
+../commonEclipse/44binit.asm:156    .text:000001d4 HandlerSIO
+../commonEclipse/44binit.asm:155    .text:000001bc HandlerUTXD0
+../commonEclipse/44binit.asm:154    .text:000001a4 HandlerUTXD1
+../commonEclipse/44binit.asm:153    .text:0000018c HandlerRTC
+../commonEclipse/44binit.asm:152    .text:00000174 HandlerADC
+../commonEclipse/44binit.asm:343    .text:00000540 EnterPWDN
+                            *ABS*:0c7fff1c HandleFIQ
+                            *ABS*:0c7fff18 HandleIRQ
+                            *ABS*:0c7fff04 HandleUndef
+                            *ABS*:0c7fff08 HandleSWI
+                            *ABS*:0c7fff10 HandleDabort
+                            *ABS*:0c7fff0c HandlePabort
+                            *ABS*:0c7fff20 HandleADC
+                            *ABS*:0c7fff24 HandleRTC
+                            *ABS*:0c7fff28 HandleUTXD1
+                            *ABS*:0c7fff2c HandleUTXD0
+                            *ABS*:0c7fff30 HandleSIO
+                            *ABS*:0c7fff34 HandleIIC
+                            *ABS*:0c7fff38 HandleURXD1
+                            *ABS*:0c7fff3c HandleURXD0
+                            *ABS*:0c7fff40 HandleTIMER5
+                            *ABS*:0c7fff44 HandleTIMER4
+                            *ABS*:0c7fff48 HandleTIMER3
+                            *ABS*:0c7fff4c HandleTIMER2
+                            *ABS*:0c7fff50 HandleTIMER1
+                            *ABS*:0c7fff54 HandleTIMER0
+                            *ABS*:0c7fff58 HandleUERR01
+                            *ABS*:0c7fff5c HandleWDT
+                            *ABS*:0c7fff60 HandleBDMA1
+                            *ABS*:0c7fff64 HandleBDMA0
+                            *ABS*:0c7fff68 HandleZDMA1
+                            *ABS*:0c7fff6c HandleZDMA0
+                            *ABS*:0c7fff70 HandleTICK
+                            *ABS*:0c7fff74 HandleEINT4567
+                            *ABS*:0c7fff78 HandleEINT3
+                            *ABS*:0c7fff7c HandleEINT2
+                            *ABS*:0c7fff80 HandleEINT1
+                            *ABS*:0c7fff84 HandleEINT0
+../commonEclipse/44binit.asm:181    .text:000003e4 IsrIRQ
+../commonEclipse/44binit.asm:209    .text:00000424 l2
+../commonEclipse/44binit.asm:196    .text:00000400 l0
+../commonEclipse/44binit.asm:202    .text:00000410 l1
+../commonEclipse/44binit.asm:375    .text:000006d8 SMRDATA
+                            *ABS*:0c7ff100 SVCStack
+../commonEclipse/44binit.asm:308    .text:000004f4 InitStacks
+../commonEclipse/44binit.asm:290    .text:000004cc F1
+../commonEclipse/44binit.asm:285    .text:000004bc F0
+../commonEclipse/44binit.asm:293    .text:000004d4 F2
+                            *ABS*:0c7ff200 UndefStack
+                            *ABS*:0c7ff300 AbortStack
+                            *ABS*:0c7ff400 IRQStack
+                            *ABS*:0c7ff500 FIQStack
+../commonEclipse/44binit.asm:365    .text:00000580 U0
+../commonEclipse/44binit.asm:373    .text:00000594 $d
+../commonEclipse/44binit.asm:420    *ABS*:0c7ff000 UserStack
+../commonEclipse/44binit.asm:427    *ABS*:0c7fff00 HandleReset
+../commonEclipse/44binit.asm:432    *ABS*:0c7fff14 HandleReserved
+                   .debug_aranges:0000000c $d
+
+UNDEFINED SYMBOLS
+Image_RO_Limit
+Image_RW_Base
+Image_ZI_Base
+Image_ZI_Limit
+Main

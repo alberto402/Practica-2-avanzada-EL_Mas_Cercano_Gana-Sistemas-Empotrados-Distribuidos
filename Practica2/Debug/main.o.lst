@@ -1,0 +1,512 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"main.c"
+  21              	.Ltext0:
+  22              		.file 1 "../main.c"
+ 3184              		.align	2
+ 3187              	jugador1:
+ 3188 0000 FFFFFFFF 		.word	-1
+ 3189              		.global	jugador2
+ 3190              		.align	2
+ 3193              	jugador2:
+ 3194 0004 FFFFFFFF 		.word	-1
+ 3195              		.global	turno
+ 3196              		.align	2
+ 3199              	turno:
+ 3200 0008 FFFFFFFF 		.word	-1
+ 3201              		.global	key
+ 3202              		.align	2
+ 3205              	key:
+ 3206 000c FFFFFFFF 		.word	-1
+ 3207              		.global	acabado
+ 3208              		.bss
+ 3209              		.align	2
+ 3212              	acabado:
+ 3213 0000 00000000 		.space	4
+ 3214              		.comm	num,4,4
+ 3215              		.global	__aeabi_i2d
+ 3216              		.global	__aeabi_dcmplt
+ 3217              		.global	__aeabi_dcmpgt
+ 3218              		.text
+ 3219              		.align	2
+ 3220              		.global	Main
+ 3222              	Main:
+ 3223              	.LFB0:
+   1:../main.c     **** /*--- ficheros de cabecera ---*/
+   2:../main.c     **** #include "44blib.h"
+   3:../main.c     **** #include "44b.h"
+   4:../main.c     **** #include "stdio.h"
+   5:../main.c     **** #include <stdlib.h>
+   6:../main.c     **** #include <math.h>
+   7:../main.c     **** 
+   8:../main.c     **** 
+   9:../main.c     **** /*--- funciones externas ---*/
+  10:../main.c     **** int jugador1=-1,jugador2=-1;
+  11:../main.c     **** int turno=-1;
+  12:../main.c     **** int key=-1;
+  13:../main.c     **** int acabado=0;
+  14:../main.c     **** int num;
+  15:../main.c     **** extern void leds_off();
+  16:../main.c     **** extern void led1_on();
+  17:../main.c     **** extern void led2_on();
+  18:../main.c     **** extern void leds_on();
+  19:../main.c     **** extern void timer_init();
+  20:../main.c     **** extern void keyboard_init();
+  21:../main.c     **** extern void D8Led_symbol(int);
+  22:../main.c     **** extern void D8Led_init();
+  23:../main.c     **** extern void Eint4567_init();
+  24:../main.c     **** extern void timer_init4();
+  25:../main.c     **** 
+  26:../main.c     **** /*--- declaracion de funciones ---*/
+  27:../main.c     **** void Main(void);
+  28:../main.c     **** /*--- codigo de funciones ---*/
+  29:../main.c     **** void Main(void)
+  30:../main.c     **** {
+ 3224              		.loc 1 30 0
+ 3225              		.cfi_startproc
+ 3226              		@ Function supports interworking.
+ 3227              		@ args = 0, pretend = 0, frame = 8
+ 3228              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3229 0000 0DC0A0E1 		mov	ip, sp
+ 3230              	.LCFI0:
+ 3231              		.cfi_def_cfa_register 12
+ 3232 0004 F0DF2DE9 		stmfd	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, ip, lr, pc}
+ 3233 0008 04B04CE2 		sub	fp, ip, #4
+ 3234              		.cfi_offset 14, -8
+ 3235              		.cfi_offset 13, -12
+ 3236              		.cfi_offset 11, -16
+ 3237              		.cfi_offset 10, -20
+ 3238              		.cfi_offset 9, -24
+ 3239              		.cfi_offset 8, -28
+ 3240              		.cfi_offset 7, -32
+ 3241              		.cfi_offset 6, -36
+ 3242              		.cfi_offset 5, -40
+ 3243              		.cfi_offset 4, -44
+ 3244              	.LCFI1:
+ 3245              		.cfi_def_cfa 11, 4
+ 3246 000c 0CD04DE2 		sub	sp, sp, #12
+  31:../main.c     **** 	/* Inicializar controladores */
+  32:../main.c     **** 	acabado=0;
+ 3247              		.loc 1 32 0
+ 3248 0010 1C339FE5 		ldr	r3, .L14
+ 3249 0014 0020A0E3 		mov	r2, #0
+ 3250 0018 002083E5 		str	r2, [r3, #0]
+  33:../main.c     **** 	sys_init(); // Inicializacion de la placa, interrupciones y puertos
+ 3251              		.loc 1 33 0
+ 3252 001c FEFFFFEB 		bl	sys_init
+  34:../main.c     **** 	timer_init(); // Inicializacion del temporizador
+ 3253              		.loc 1 34 0
+ 3254 0020 FEFFFFEB 		bl	timer_init
+  35:../main.c     ****     Eint4567_init();
+ 3255              		.loc 1 35 0
+ 3256 0024 FEFFFFEB 		bl	Eint4567_init
+  36:../main.c     **** 	/* Establecer valor inicial de los LEDs */
+  37:../main.c     **** 	keyboard_init();
+ 3257              		.loc 1 37 0
+ 3258 0028 FEFFFFEB 		bl	keyboard_init
+  38:../main.c     **** 	leds_off();
+ 3259              		.loc 1 38 0
+ 3260 002c FEFFFFEB 		bl	leds_off
+  39:../main.c     **** 	led1_on();
+ 3261              		.loc 1 39 0
+ 3262 0030 FEFFFFEB 		bl	led1_on
+  40:../main.c     **** 	num= rand () % 16;
+ 3263              		.loc 1 40 0
+ 3264 0034 FEFFFFEB 		bl	rand
+ 3265 0038 0020A0E1 		mov	r2, r0
+ 3266 003c C23FA0E1 		mov	r3, r2, asr #31
+ 3267 0040 233EA0E1 		mov	r3, r3, lsr #28
+ 3268 0044 032082E0 		add	r2, r2, r3
+ 3269 0048 0F2002E2 		and	r2, r2, #15
+ 3270 004c 023063E0 		rsb	r3, r3, r2
+ 3271 0050 0320A0E1 		mov	r2, r3
+ 3272 0054 DC329FE5 		ldr	r3, .L14+4
+ 3273 0058 002083E5 		str	r2, [r3, #0]
+  41:../main.c     **** 	D8Led_init();
+ 3274              		.loc 1 41 0
+ 3275 005c FEFFFFEB 		bl	D8Led_init
+  42:../main.c     **** 	D8Led_symbol(0);
+ 3276              		.loc 1 42 0
+ 3277 0060 0000A0E3 		mov	r0, #0
+ 3278 0064 FEFFFFEB 		bl	D8Led_symbol
+ 3279 0068 000000EA 		b	.L12
+ 3280              	.L13:
+  43:../main.c     **** 	while (1){
+  44:../main.c     **** 
+  45:../main.c     **** 
+  46:../main.c     **** 		if( turno==1&&key!=-1){
+  47:../main.c     **** 
+  48:../main.c     **** 			jugador1=key;
+  49:../main.c     **** 			key=-1;
+  50:../main.c     **** 
+  51:../main.c     **** 		}
+  52:../main.c     **** 		else if(turno==2&&key!=-1){
+  53:../main.c     **** 
+  54:../main.c     **** 			jugador2=key;
+  55:../main.c     **** 			key=-1;
+  56:../main.c     **** 
+  57:../main.c     **** 		}
+  58:../main.c     **** 
+  59:../main.c     **** 		if(acabado==1){
+  60:../main.c     **** 			leds_off();
+  61:../main.c     **** 			//iniciamos un timer
+  62:../main.c     **** 			timer_init4();
+  63:../main.c     **** 			//delay xs seg
+  64:../main.c     **** 			DelayMs(1500);
+  65:../main.c     **** 			//desactivamos timer
+  66:../main.c     **** 			rINTMSK = rINTMSK | BIT_TIMER4;
+  67:../main.c     **** 			leds_off();
+  68:../main.c     **** 			DelayMs(750);
+  69:../main.c     **** 			//ganador
+  70:../main.c     **** 			if(fabs(jugador1-num)<fabs(jugador2-num)){
+  71:../main.c     **** 				led1_on();
+  72:../main.c     **** 			}
+  73:../main.c     **** 			else if(fabs(jugador1-num)>fabs(jugador2-num)){
+  74:../main.c     **** 				led2_on();
+  75:../main.c     **** 			}
+  76:../main.c     **** 			else{
+  77:../main.c     **** 				leds_on();
+  78:../main.c     **** 			}
+  79:../main.c     **** 			D8Led_symbol(0);
+  80:../main.c     **** 			Delay(100);
+  81:../main.c     **** 			//mostrar numero elegido
+  82:../main.c     **** 			D8Led_symbol(num);
+  83:../main.c     **** 			//inizializar tambores timer
+  84:../main.c     **** 			while(acabado==1){
+  85:../main.c     **** 				if(key==0){
+  86:../main.c     **** 					acabado=0;
+  87:../main.c     **** 					key=-1;
+  88:../main.c     **** 				}
+  89:../main.c     **** 			}
+  90:../main.c     **** 			leds_off();
+  91:../main.c     **** 			led1_on();
+  92:../main.c     **** 			acabado=0;
+  93:../main.c     **** 			turno=-1;
+  94:../main.c     **** 			jugador1=-1;
+  95:../main.c     **** 			jugador2=-1;
+  96:../main.c     **** 			timer_init();
+  97:../main.c     **** 			num= rand () % 16;
+  98:../main.c     **** 
+  99:../main.c     **** 
+ 100:../main.c     **** 			//pulsar 0 para reiniciar
+ 101:../main.c     **** 		}
+ 102:../main.c     **** 
+ 103:../main.c     **** 	}
+ 3281              		.loc 1 103 0
+ 3282 006c 0000A0E1 		mov	r0, r0	@ nop
+ 3283              	.L12:
+  46:../main.c     **** 		if( turno==1&&key!=-1){
+ 3284              		.loc 1 46 0
+ 3285 0070 C4329FE5 		ldr	r3, .L14+8
+ 3286 0074 003093E5 		ldr	r3, [r3, #0]
+ 3287 0078 010053E3 		cmp	r3, #1
+ 3288 007c 0B00001A 		bne	.L2
+  46:../main.c     **** 		if( turno==1&&key!=-1){
+ 3289              		.loc 1 46 0 is_stmt 0 discriminator 1
+ 3290 0080 B8329FE5 		ldr	r3, .L14+12
+ 3291 0084 003093E5 		ldr	r3, [r3, #0]
+ 3292 0088 010073E3 		cmn	r3, #1
+ 3293 008c 0700000A 		beq	.L2
+  48:../main.c     **** 			jugador1=key;
+ 3294              		.loc 1 48 0 is_stmt 1
+ 3295 0090 A8329FE5 		ldr	r3, .L14+12
+ 3296 0094 002093E5 		ldr	r2, [r3, #0]
+ 3297 0098 A4329FE5 		ldr	r3, .L14+16
+ 3298 009c 002083E5 		str	r2, [r3, #0]
+  49:../main.c     **** 			key=-1;
+ 3299              		.loc 1 49 0
+ 3300 00a0 98329FE5 		ldr	r3, .L14+12
+ 3301 00a4 0020E0E3 		mvn	r2, #0
+ 3302 00a8 002083E5 		str	r2, [r3, #0]
+ 3303 00ac 0E0000EA 		b	.L3
+ 3304              	.L2:
+  52:../main.c     **** 		else if(turno==2&&key!=-1){
+ 3305              		.loc 1 52 0
+ 3306 00b0 84329FE5 		ldr	r3, .L14+8
+ 3307 00b4 003093E5 		ldr	r3, [r3, #0]
+ 3308 00b8 020053E3 		cmp	r3, #2
+ 3309 00bc 0A00001A 		bne	.L3
+  52:../main.c     **** 		else if(turno==2&&key!=-1){
+ 3310              		.loc 1 52 0 is_stmt 0 discriminator 1
+ 3311 00c0 78329FE5 		ldr	r3, .L14+12
+ 3312 00c4 003093E5 		ldr	r3, [r3, #0]
+ 3313 00c8 010073E3 		cmn	r3, #1
+ 3314 00cc 0600000A 		beq	.L3
+  54:../main.c     **** 			jugador2=key;
+ 3315              		.loc 1 54 0 is_stmt 1
+ 3316 00d0 68329FE5 		ldr	r3, .L14+12
+ 3317 00d4 002093E5 		ldr	r2, [r3, #0]
+ 3318 00d8 68329FE5 		ldr	r3, .L14+20
+ 3319 00dc 002083E5 		str	r2, [r3, #0]
+  55:../main.c     **** 			key=-1;
+ 3320              		.loc 1 55 0
+ 3321 00e0 58329FE5 		ldr	r3, .L14+12
+ 3322 00e4 0020E0E3 		mvn	r2, #0
+ 3323 00e8 002083E5 		str	r2, [r3, #0]
+ 3324              	.L3:
+  59:../main.c     **** 		if(acabado==1){
+ 3325              		.loc 1 59 0
+ 3326 00ec 40329FE5 		ldr	r3, .L14
+ 3327 00f0 003093E5 		ldr	r3, [r3, #0]
+ 3328 00f4 010053E3 		cmp	r3, #1
+ 3329 00f8 DBFFFF1A 		bne	.L13
+  60:../main.c     **** 			leds_off();
+ 3330              		.loc 1 60 0
+ 3331 00fc FEFFFFEB 		bl	leds_off
+  62:../main.c     **** 			timer_init4();
+ 3332              		.loc 1 62 0
+ 3333 0100 FEFFFFEB 		bl	timer_init4
+  64:../main.c     **** 			DelayMs(1500);
+ 3334              		.loc 1 64 0
+ 3335 0104 40029FE5 		ldr	r0, .L14+24
+ 3336 0108 FEFFFFEB 		bl	DelayMs
+  66:../main.c     **** 			rINTMSK = rINTMSK | BIT_TIMER4;
+ 3337              		.loc 1 66 0
+ 3338 010c 3C329FE5 		ldr	r3, .L14+28
+ 3339 0110 38229FE5 		ldr	r2, .L14+28
+ 3340 0114 002092E5 		ldr	r2, [r2, #0]
+ 3341 0118 022C82E3 		orr	r2, r2, #512
+ 3342 011c 002083E5 		str	r2, [r3, #0]
+  67:../main.c     **** 			leds_off();
+ 3343              		.loc 1 67 0
+ 3344 0120 FEFFFFEB 		bl	leds_off
+  68:../main.c     **** 			DelayMs(750);
+ 3345              		.loc 1 68 0
+ 3346 0124 28029FE5 		ldr	r0, .L14+32
+ 3347 0128 FEFFFFEB 		bl	DelayMs
+  70:../main.c     **** 			if(fabs(jugador1-num)<fabs(jugador2-num)){
+ 3348              		.loc 1 70 0
+ 3349 012c 10329FE5 		ldr	r3, .L14+16
+ 3350 0130 002093E5 		ldr	r2, [r3, #0]
+ 3351 0134 FC319FE5 		ldr	r3, .L14+4
+ 3352 0138 003093E5 		ldr	r3, [r3, #0]
+ 3353 013c 023063E0 		rsb	r3, r3, r2
+ 3354 0140 0300A0E1 		mov	r0, r3
+ 3355 0144 FEFFFFEB 		bl	__aeabi_i2d
+ 3356 0148 0030A0E1 		mov	r3, r0
+ 3357 014c 0140A0E1 		mov	r4, r1
+ 3358 0150 0350A0E1 		mov	r5, r3
+ 3359 0154 0261C4E3 		bic	r6, r4, #-2147483648
+ 3360 0158 E8319FE5 		ldr	r3, .L14+20
+ 3361 015c 002093E5 		ldr	r2, [r3, #0]
+ 3362 0160 D0319FE5 		ldr	r3, .L14+4
+ 3363 0164 003093E5 		ldr	r3, [r3, #0]
+ 3364 0168 023063E0 		rsb	r3, r3, r2
+ 3365 016c 0300A0E1 		mov	r0, r3
+ 3366 0170 FEFFFFEB 		bl	__aeabi_i2d
+ 3367 0174 0030A0E1 		mov	r3, r0
+ 3368 0178 0140A0E1 		mov	r4, r1
+ 3369 017c 0370A0E1 		mov	r7, r3
+ 3370 0180 0281C4E3 		bic	r8, r4, #-2147483648
+ 3371 0184 0130A0E3 		mov	r3, #1
+ 3372 0188 0340A0E1 		mov	r4, r3
+ 3373 018c 0500A0E1 		mov	r0, r5
+ 3374 0190 0610A0E1 		mov	r1, r6
+ 3375 0194 0720A0E1 		mov	r2, r7
+ 3376 0198 0830A0E1 		mov	r3, r8
+ 3377 019c FEFFFFEB 		bl	__aeabi_dcmplt
+ 3378 01a0 0030A0E1 		mov	r3, r0
+ 3379 01a4 000053E3 		cmp	r3, #0
+ 3380 01a8 0100001A 		bne	.L5
+ 3381 01ac 0030A0E3 		mov	r3, #0
+ 3382 01b0 0340A0E1 		mov	r4, r3
+ 3383              	.L5:
+ 3384 01b4 FF3004E2 		and	r3, r4, #255
+ 3385 01b8 000053E3 		cmp	r3, #0
+ 3386 01bc 0100000A 		beq	.L6
+  71:../main.c     **** 				led1_on();
+ 3387              		.loc 1 71 0
+ 3388 01c0 FEFFFFEB 		bl	led1_on
+ 3389 01c4 290000EA 		b	.L7
+ 3390              	.L6:
+  73:../main.c     **** 			else if(fabs(jugador1-num)>fabs(jugador2-num)){
+ 3391              		.loc 1 73 0
+ 3392 01c8 74319FE5 		ldr	r3, .L14+16
+ 3393 01cc 002093E5 		ldr	r2, [r3, #0]
+ 3394 01d0 60319FE5 		ldr	r3, .L14+4
+ 3395 01d4 003093E5 		ldr	r3, [r3, #0]
+ 3396 01d8 023063E0 		rsb	r3, r3, r2
+ 3397 01dc 0300A0E1 		mov	r0, r3
+ 3398 01e0 FEFFFFEB 		bl	__aeabi_i2d
+ 3399 01e4 0030A0E1 		mov	r3, r0
+ 3400 01e8 0140A0E1 		mov	r4, r1
+ 3401 01ec 0390A0E1 		mov	r9, r3
+ 3402 01f0 02A1C4E3 		bic	sl, r4, #-2147483648
+ 3403 01f4 4C319FE5 		ldr	r3, .L14+20
+ 3404 01f8 002093E5 		ldr	r2, [r3, #0]
+ 3405 01fc 34319FE5 		ldr	r3, .L14+4
+ 3406 0200 003093E5 		ldr	r3, [r3, #0]
+ 3407 0204 023063E0 		rsb	r3, r3, r2
+ 3408 0208 0300A0E1 		mov	r0, r3
+ 3409 020c FEFFFFEB 		bl	__aeabi_i2d
+ 3410 0210 0030A0E1 		mov	r3, r0
+ 3411 0214 0140A0E1 		mov	r4, r1
+ 3412 0218 0320A0E1 		mov	r2, r3
+ 3413 021c 34200BE5 		str	r2, [fp, #-52]
+ 3414 0220 0221C4E3 		bic	r2, r4, #-2147483648
+ 3415 0224 30200BE5 		str	r2, [fp, #-48]
+ 3416 0228 0130A0E3 		mov	r3, #1
+ 3417 022c 0340A0E1 		mov	r4, r3
+ 3418 0230 0900A0E1 		mov	r0, r9
+ 3419 0234 0A10A0E1 		mov	r1, sl
+ 3420 0238 34304BE2 		sub	r3, fp, #52
+ 3421 023c 0C0093E8 		ldmia	r3, {r2-r3}
+ 3422 0240 FEFFFFEB 		bl	__aeabi_dcmpgt
+ 3423 0244 0030A0E1 		mov	r3, r0
+ 3424 0248 000053E3 		cmp	r3, #0
+ 3425 024c 0100001A 		bne	.L8
+ 3426 0250 0030A0E3 		mov	r3, #0
+ 3427 0254 0340A0E1 		mov	r4, r3
+ 3428              	.L8:
+ 3429 0258 FF3004E2 		and	r3, r4, #255
+ 3430 025c 000053E3 		cmp	r3, #0
+ 3431 0260 0100000A 		beq	.L9
+  74:../main.c     **** 				led2_on();
+ 3432              		.loc 1 74 0
+ 3433 0264 FEFFFFEB 		bl	led2_on
+ 3434 0268 000000EA 		b	.L7
+ 3435              	.L9:
+  77:../main.c     **** 				leds_on();
+ 3436              		.loc 1 77 0
+ 3437 026c FEFFFFEB 		bl	leds_on
+ 3438              	.L7:
+  79:../main.c     **** 			D8Led_symbol(0);
+ 3439              		.loc 1 79 0
+ 3440 0270 0000A0E3 		mov	r0, #0
+ 3441 0274 FEFFFFEB 		bl	D8Led_symbol
+  80:../main.c     **** 			Delay(100);
+ 3442              		.loc 1 80 0
+ 3443 0278 6400A0E3 		mov	r0, #100
+ 3444 027c FEFFFFEB 		bl	Delay
+  82:../main.c     **** 			D8Led_symbol(num);
+ 3445              		.loc 1 82 0
+ 3446 0280 B0309FE5 		ldr	r3, .L14+4
+ 3447 0284 003093E5 		ldr	r3, [r3, #0]
+ 3448 0288 0300A0E1 		mov	r0, r3
+ 3449 028c FEFFFFEB 		bl	D8Led_symbol
+  84:../main.c     **** 			while(acabado==1){
+ 3450              		.loc 1 84 0
+ 3451 0290 090000EA 		b	.L10
+ 3452              	.L11:
+  85:../main.c     **** 				if(key==0){
+ 3453              		.loc 1 85 0
+ 3454 0294 A4309FE5 		ldr	r3, .L14+12
+ 3455 0298 003093E5 		ldr	r3, [r3, #0]
+ 3456 029c 000053E3 		cmp	r3, #0
+ 3457 02a0 0500001A 		bne	.L10
+  86:../main.c     **** 					acabado=0;
+ 3458              		.loc 1 86 0
+ 3459 02a4 88309FE5 		ldr	r3, .L14
+ 3460 02a8 0020A0E3 		mov	r2, #0
+ 3461 02ac 002083E5 		str	r2, [r3, #0]
+  87:../main.c     **** 					key=-1;
+ 3462              		.loc 1 87 0
+ 3463 02b0 88309FE5 		ldr	r3, .L14+12
+ 3464 02b4 0020E0E3 		mvn	r2, #0
+ 3465 02b8 002083E5 		str	r2, [r3, #0]
+ 3466              	.L10:
+  84:../main.c     **** 			while(acabado==1){
+ 3467              		.loc 1 84 0 discriminator 1
+ 3468 02bc 70309FE5 		ldr	r3, .L14
+ 3469 02c0 003093E5 		ldr	r3, [r3, #0]
+ 3470 02c4 010053E3 		cmp	r3, #1
+ 3471 02c8 F1FFFF0A 		beq	.L11
+  90:../main.c     **** 			leds_off();
+ 3472              		.loc 1 90 0
+ 3473 02cc FEFFFFEB 		bl	leds_off
+  91:../main.c     **** 			led1_on();
+ 3474              		.loc 1 91 0
+ 3475 02d0 FEFFFFEB 		bl	led1_on
+  92:../main.c     **** 			acabado=0;
+ 3476              		.loc 1 92 0
+ 3477 02d4 58309FE5 		ldr	r3, .L14
+ 3478 02d8 0020A0E3 		mov	r2, #0
+ 3479 02dc 002083E5 		str	r2, [r3, #0]
+  93:../main.c     **** 			turno=-1;
+ 3480              		.loc 1 93 0
+ 3481 02e0 54309FE5 		ldr	r3, .L14+8
+ 3482 02e4 0020E0E3 		mvn	r2, #0
+ 3483 02e8 002083E5 		str	r2, [r3, #0]
+  94:../main.c     **** 			jugador1=-1;
+ 3484              		.loc 1 94 0
+ 3485 02ec 50309FE5 		ldr	r3, .L14+16
+ 3486 02f0 0020E0E3 		mvn	r2, #0
+ 3487 02f4 002083E5 		str	r2, [r3, #0]
+  95:../main.c     **** 			jugador2=-1;
+ 3488              		.loc 1 95 0
+ 3489 02f8 48309FE5 		ldr	r3, .L14+20
+ 3490 02fc 0020E0E3 		mvn	r2, #0
+ 3491 0300 002083E5 		str	r2, [r3, #0]
+  96:../main.c     **** 			timer_init();
+ 3492              		.loc 1 96 0
+ 3493 0304 FEFFFFEB 		bl	timer_init
+  97:../main.c     **** 			num= rand () % 16;
+ 3494              		.loc 1 97 0
+ 3495 0308 FEFFFFEB 		bl	rand
+ 3496 030c 0020A0E1 		mov	r2, r0
+ 3497 0310 C23FA0E1 		mov	r3, r2, asr #31
+ 3498 0314 233EA0E1 		mov	r3, r3, lsr #28
+ 3499 0318 032082E0 		add	r2, r2, r3
+ 3500 031c 0F2002E2 		and	r2, r2, #15
+ 3501 0320 023063E0 		rsb	r3, r3, r2
+ 3502 0324 0320A0E1 		mov	r2, r3
+ 3503 0328 08309FE5 		ldr	r3, .L14+4
+ 3504 032c 002083E5 		str	r2, [r3, #0]
+ 3505              		.loc 1 103 0
+ 3506 0330 4EFFFFEA 		b	.L12
+ 3507              	.L15:
+ 3508              		.align	2
+ 3509              	.L14:
+ 3510 0334 00000000 		.word	acabado
+ 3511 0338 00000000 		.word	num
+ 3512 033c 00000000 		.word	turno
+ 3513 0340 00000000 		.word	key
+ 3514 0344 00000000 		.word	jugador1
+ 3515 0348 00000000 		.word	jugador2
+ 3516 034c DC050000 		.word	1500
+ 3517 0350 0C00E001 		.word	31457292
+ 3518 0354 EE020000 		.word	750
+ 3519              		.cfi_endproc
+ 3520              	.LFE0:
+ 3522              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3187   .data:00000000 jugador1
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3184   .data:00000000 $d
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3193   .data:00000004 jugador2
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3199   .data:00000008 turno
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3205   .data:0000000c key
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3212   .bss:00000000 acabado
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3209   .bss:00000000 $d
+                            *COM*:00000004 num
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3219   .text:00000000 $a
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3222   .text:00000000 Main
+C:\Users\USUARI~2\AppData\Local\Temp\ccC0eYVY.s:3510   .text:00000334 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+__aeabi_i2d
+__aeabi_dcmplt
+__aeabi_dcmpgt
+sys_init
+timer_init
+Eint4567_init
+keyboard_init
+leds_off
+led1_on
+rand
+D8Led_init
+D8Led_symbol
+timer_init4
+DelayMs
+led2_on
+leds_on
+Delay

@@ -1,0 +1,30 @@
+   1              	# 1 "../guiada/init.asm"
+   1              		.global start
+   0              	
+   0              	
+   0              	
+   2              	    .extern Main
+   3              	    .equ STACK, 0x0C7FF000
+   4              	
+   5              	start: 
+   6 0000 0CD09FE5 	    LDR SP,=STACK
+   7 0004 00B0A0E3 	    MOV FP,#0
+   8              	    
+   9 0008 0FE0A0E1 	    MOV LR,PC
+  10 000c 04F09FE5 	    LDR PC,=Main
+  11              	
+  12              	End:
+  13 0010 FEFFFFEA 	    B End
+  14              	
+  15 0014 00F07F0C 	.end
+  15      00000000 
+DEFINED SYMBOLS
+  ../guiada/init.asm:5      .text:00000000 start
+  ../guiada/init.asm:3      *ABS*:0c7ff000 STACK
+  ../guiada/init.asm:6      .text:00000000 $a
+  ../guiada/init.asm:12     .text:00000010 End
+  ../guiada/init.asm:15     .text:00000014 $d
+                   .debug_aranges:0000000c $d
+
+UNDEFINED SYMBOLS
+Main

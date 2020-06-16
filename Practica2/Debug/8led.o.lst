@@ -1,0 +1,165 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"8led.c"
+  21              	.Ltext0:
+  22              		.file 1 "../8led.c"
+ 1964              		.align	2
+ 1967              	Symbol:
+ 1968 0000 12000000 		.word	18
+ 1969 0004 9F000000 		.word	159
+ 1970 0008 31000000 		.word	49
+ 1971 000c 15000000 		.word	21
+ 1972 0010 9C000000 		.word	156
+ 1973 0014 54000000 		.word	84
+ 1974 0018 50000000 		.word	80
+ 1975 001c 1F000000 		.word	31
+ 1976 0020 10000000 		.word	16
+ 1977 0024 1C000000 		.word	28
+ 1978 0028 18000000 		.word	24
+ 1979 002c D0000000 		.word	208
+ 1980 0030 72000000 		.word	114
+ 1981 0034 91000000 		.word	145
+ 1982 0038 70000000 		.word	112
+ 1983 003c 78000000 		.word	120
+ 1984 0040 FD000000 		.word	253
+ 1985              		.text
+ 1986              		.align	2
+ 1987              		.global	D8Led_init
+ 1989              	D8Led_init:
+ 1990              	.LFB0:
+   1:../8led.c     **** /*--- ficheros de cabecera ---*/
+   2:../8led.c     **** #include "44b.h"
+   3:../8led.c     **** #include "44blib.h"
+   4:../8led.c     **** /*--- definicion de macros ---*/
+   5:../8led.c     **** /* Mapa de bits de cada segmento
+   6:../8led.c     **** (valor que se debe escribir para que se ilumine el segmento) */
+   7:../8led.c     **** #define SEGMENT_A 0x7F
+   8:../8led.c     **** #define SEGMENT_B 0xBF
+   9:../8led.c     **** #define SEGMENT_C 0xDF 
+  10:../8led.c     **** #define SEGMENT_D 0xF7 
+  11:../8led.c     **** #define SEGMENT_E 0xFB 
+  12:../8led.c     **** #define SEGMENT_F 0xFD 
+  13:../8led.c     **** #define SEGMENT_G 0xFE 
+  14:../8led.c     **** #define SEGMENT_P 0xEF 
+  15:../8led.c     **** 
+  16:../8led.c     **** #define DIGIT_F (SEGMENT_A & SEGMENT_G & SEGMENT_E & SEGMENT_F)
+  17:../8led.c     **** #define DIGIT_E (SEGMENT_A & SEGMENT_G & SEGMENT_E & SEGMENT_F & SEGMENT_D)
+  18:../8led.c     **** #define DIGIT_D (SEGMENT_B & SEGMENT_C & SEGMENT_D & SEGMENT_F & SEGMENT_E)
+  19:../8led.c     **** #define DIGIT_C (SEGMENT_A & SEGMENT_D & SEGMENT_E & SEGMENT_G)
+  20:../8led.c     **** #define DIGIT_B (SEGMENT_C & SEGMENT_D & SEGMENT_F & SEGMENT_E & SEGMENT_G)
+  21:../8led.c     **** #define DIGIT_A (SEGMENT_A & SEGMENT_B & SEGMENT_C & SEGMENT_F & SEGMENT_E & SEGMENT_G)
+  22:../8led.c     **** #define DIGIT_9 (SEGMENT_A & SEGMENT_B & SEGMENT_C & SEGMENT_F & SEGMENT_G)
+  23:../8led.c     **** #define DIGIT_0 (SEGMENT_A & SEGMENT_B & SEGMENT_C & SEGMENT_D & SEGMENT_E & SEGMENT_G)
+  24:../8led.c     **** #define DIGIT_1 (SEGMENT_B & SEGMENT_C)
+  25:../8led.c     **** #define DIGIT_2 (SEGMENT_A & SEGMENT_B & SEGMENT_F & SEGMENT_E & SEGMENT_D)
+  26:../8led.c     **** #define DIGIT_3 (SEGMENT_A & SEGMENT_B & SEGMENT_F & SEGMENT_C & SEGMENT_D)
+  27:../8led.c     **** #define DIGIT_4 (SEGMENT_B & SEGMENT_C & SEGMENT_F & SEGMENT_G)
+  28:../8led.c     **** #define DIGIT_5 (SEGMENT_A & SEGMENT_C & SEGMENT_D & SEGMENT_F & SEGMENT_G)
+  29:../8led.c     **** #define DIGIT_6 (SEGMENT_A & SEGMENT_C & SEGMENT_D & SEGMENT_E & SEGMENT_F & SEGMENT_G)
+  30:../8led.c     **** #define DIGIT_7 (SEGMENT_A & SEGMENT_B & SEGMENT_C)
+  31:../8led.c     **** #define DIGIT_8 (SEGMENT_A & SEGMENT_B & SEGMENT_C & SEGMENT_D & SEGMENT_E & SEGMENT_F & SEGMENT_G)
+  32:../8led.c     **** #define BARRA (SEGMENT_F )
+  33:../8led.c     **** 
+  34:../8led.c     **** /*--- variables globales ---*/
+  35:../8led.c     **** /* tabla de segmentos */
+  36:../8led.c     **** int Symbol[] = {DIGIT_0, DIGIT_1, DIGIT_2, DIGIT_3, DIGIT_4, DIGIT_5,
+  37:../8led.c     **** 					DIGIT_6, DIGIT_7, DIGIT_8, DIGIT_9, DIGIT_A, DIGIT_B,
+  38:../8led.c     **** 					DIGIT_C, DIGIT_D, DIGIT_E, DIGIT_F,BARRA};
+  39:../8led.c     **** /*--- declaracion de funciones ---*/
+  40:../8led.c     **** void D8Led_init(void);
+  41:../8led.c     **** void D8Led_symbol(int value);
+  42:../8led.c     **** /*--- codigo de las funciones ---*/
+  43:../8led.c     **** void D8Led_init(void)
+  44:../8led.c     **** {
+ 1991              		.loc 1 44 0
+ 1992              		.cfi_startproc
+ 1993              		@ Function supports interworking.
+ 1994              		@ args = 0, pretend = 0, frame = 0
+ 1995              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1996 0000 0DC0A0E1 		mov	ip, sp
+ 1997              	.LCFI0:
+ 1998              		.cfi_def_cfa_register 12
+ 1999 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2000 0008 04B04CE2 		sub	fp, ip, #4
+ 2001              		.cfi_offset 14, -8
+ 2002              		.cfi_offset 13, -12
+ 2003              		.cfi_offset 11, -16
+ 2004              	.LCFI1:
+ 2005              		.cfi_def_cfa 11, 4
+  45:../8led.c     **** /* Estado inicial del display con todos los segmentos iluminados
+  46:../8led.c     **** (buscar en los ficheros de cabecera la direccion implicada--->44blib.h) */ 
+  47:../8led.c     **** 	LED8ADDR = 0; 
+ 2006              		.loc 1 47 0
+ 2007 000c 8537A0E3 		mov	r3, #34865152
+ 2008 0010 0020A0E3 		mov	r2, #0
+ 2009 0014 0020C3E5 		strb	r2, [r3, #0]
+  48:../8led.c     **** }
+ 2010              		.loc 1 48 0
+ 2011 0018 0CD04BE2 		sub	sp, fp, #12
+ 2012 001c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2013 0020 1EFF2FE1 		bx	lr
+ 2014              		.cfi_endproc
+ 2015              	.LFE0:
+ 2017              		.align	2
+ 2018              		.global	D8Led_symbol
+ 2020              	D8Led_symbol:
+ 2021              	.LFB1:
+  49:../8led.c     **** void D8Led_symbol(int value)
+  50:../8led.c     **** {
+ 2022              		.loc 1 50 0
+ 2023              		.cfi_startproc
+ 2024              		@ Function supports interworking.
+ 2025              		@ args = 0, pretend = 0, frame = 8
+ 2026              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2027 0024 0DC0A0E1 		mov	ip, sp
+ 2028              	.LCFI2:
+ 2029              		.cfi_def_cfa_register 12
+ 2030 0028 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2031 002c 04B04CE2 		sub	fp, ip, #4
+ 2032              		.cfi_offset 14, -8
+ 2033              		.cfi_offset 13, -12
+ 2034              		.cfi_offset 11, -16
+ 2035              	.LCFI3:
+ 2036              		.cfi_def_cfa 11, 4
+ 2037 0030 08D04DE2 		sub	sp, sp, #8
+ 2038 0034 10000BE5 		str	r0, [fp, #-16]
+  51:../8led.c     **** // muestra Symbol[value] en el display
+  52:../8led.c     **** 	LED8ADDR=Symbol[value];
+ 2039              		.loc 1 52 0
+ 2040 0038 8537A0E3 		mov	r3, #34865152
+ 2041 003c 18209FE5 		ldr	r2, .L3
+ 2042 0040 10101BE5 		ldr	r1, [fp, #-16]
+ 2043 0044 012192E7 		ldr	r2, [r2, r1, asl #2]
+ 2044 0048 FF2002E2 		and	r2, r2, #255
+ 2045 004c 0020C3E5 		strb	r2, [r3, #0]
+  53:../8led.c     **** }
+ 2046              		.loc 1 53 0
+ 2047 0050 0CD04BE2 		sub	sp, fp, #12
+ 2048 0054 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2049 0058 1EFF2FE1 		bx	lr
+ 2050              	.L4:
+ 2051              		.align	2
+ 2052              	.L3:
+ 2053 005c 00000000 		.word	Symbol
+ 2054              		.cfi_endproc
+ 2055              	.LFE1:
+ 2057              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 8led.c
+C:\Users\USUARI~2\AppData\Local\Temp\ccjbNYlb.s:1967   .data:00000000 Symbol
+C:\Users\USUARI~2\AppData\Local\Temp\ccjbNYlb.s:1964   .data:00000000 $d
+C:\Users\USUARI~2\AppData\Local\Temp\ccjbNYlb.s:1986   .text:00000000 $a
+C:\Users\USUARI~2\AppData\Local\Temp\ccjbNYlb.s:1989   .text:00000000 D8Led_init
+C:\Users\USUARI~2\AppData\Local\Temp\ccjbNYlb.s:2020   .text:00000024 D8Led_symbol
+C:\Users\USUARI~2\AppData\Local\Temp\ccjbNYlb.s:2053   .text:0000005c $d
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

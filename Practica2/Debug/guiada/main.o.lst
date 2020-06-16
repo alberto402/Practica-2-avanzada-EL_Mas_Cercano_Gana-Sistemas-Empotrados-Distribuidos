@@ -1,0 +1,90 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"main.c"
+  21              	.Ltext0:
+  22              		.file 1 "../guiada/main.c"
+ 2871              		.align	2
+ 2872              		.global	Main
+ 2874              	Main:
+ 2875              	.LFB0:
+   1:../guiada/main.c **** /*--- ficheros de cabecera ---*/
+   2:../guiada/main.c **** #include "44blib.h"
+   3:../guiada/main.c **** #include "44b.h"
+   4:../guiada/main.c **** #include "stdio.h"
+   5:../guiada/main.c **** /*--- funciones externas ---*/
+   6:../guiada/main.c **** extern void leds_off();
+   7:../guiada/main.c **** extern void led1_on();
+   8:../guiada/main.c **** extern void timer_init();
+   9:../guiada/main.c **** extern void keyboard_init();
+  10:../guiada/main.c **** extern void D8Led_symbol(int);
+  11:../guiada/main.c **** extern void D8Led_init();
+  12:../guiada/main.c **** /*--- declaracion de funciones ---*/
+  13:../guiada/main.c **** void Main(void);
+  14:../guiada/main.c **** /*--- codigo de funciones ---*/
+  15:../guiada/main.c **** void Main(void)
+  16:../guiada/main.c **** {
+ 2876              		.loc 1 16 0
+ 2877              		.cfi_startproc
+ 2878              		@ Function supports interworking.
+ 2879              		@ args = 0, pretend = 0, frame = 0
+ 2880              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2881 0000 0DC0A0E1 		mov	ip, sp
+ 2882              	.LCFI0:
+ 2883              		.cfi_def_cfa_register 12
+ 2884 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2885 0008 04B04CE2 		sub	fp, ip, #4
+ 2886              		.cfi_offset 14, -8
+ 2887              		.cfi_offset 13, -12
+ 2888              		.cfi_offset 11, -16
+ 2889              	.LCFI1:
+ 2890              		.cfi_def_cfa 11, 4
+  17:../guiada/main.c **** 	/* Inicializar controladores */
+  18:../guiada/main.c **** 	sys_init(); // Inicializacion de la placa, interrupciones y puertos
+ 2891              		.loc 1 18 0
+ 2892 000c FEFFFFEB 		bl	sys_init
+  19:../guiada/main.c **** 	//timer_init(); // Inicializacion del temporizador
+  20:../guiada/main.c **** 	/* Establecer valor inicial de los LEDs */
+  21:../guiada/main.c **** 	keyboard_init();
+ 2893              		.loc 1 21 0
+ 2894 0010 FEFFFFEB 		bl	keyboard_init
+  22:../guiada/main.c **** 	leds_off();
+ 2895              		.loc 1 22 0
+ 2896 0014 FEFFFFEB 		bl	leds_off
+  23:../guiada/main.c **** 	led1_on();
+ 2897              		.loc 1 23 0
+ 2898 0018 FEFFFFEB 		bl	led1_on
+  24:../guiada/main.c **** 	D8Led_init();
+ 2899              		.loc 1 24 0
+ 2900 001c FEFFFFEB 		bl	D8Led_init
+  25:../guiada/main.c **** 	D8Led_symbol(0);
+ 2901              		.loc 1 25 0
+ 2902 0020 0000A0E3 		mov	r0, #0
+ 2903 0024 FEFFFFEB 		bl	D8Led_symbol
+ 2904              	.L2:
+  26:../guiada/main.c **** 	while (1); // espera
+ 2905              		.loc 1 26 0 discriminator 1
+ 2906 0028 FEFFFFEA 		b	.L2
+ 2907              		.cfi_endproc
+ 2908              	.LFE0:
+ 2910              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\USUARI~2\AppData\Local\Temp\ccsIOTZm.s:2871   .text:00000000 $a
+C:\Users\USUARI~2\AppData\Local\Temp\ccsIOTZm.s:2874   .text:00000000 Main
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+keyboard_init
+leds_off
+led1_on
+D8Led_init
+D8Led_symbol
